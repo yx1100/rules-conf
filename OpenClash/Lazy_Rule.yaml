@@ -63,7 +63,7 @@ hosts:
 dns:
   enable: true
   listen: 0.0.0.0:53
-  ipv6: true # 当此选项为 false 时, AAAA 请求将返回空
+  ipv6: false # 当此选项为 false 时, AAAA 请求将返回空
 
   # 以下填写的 DNS 服务器将会被用来解析 DNS 服务的域名
   # 仅填写 DNS 服务器的 IP 地址
@@ -167,13 +167,19 @@ dns:
   # 所有 DNS 请求将会直接发送到服务器，不经过任何代理。
   # Clash 会使用最先获得的解析记录回复 DNS 请求
   nameserver:
+    # - 119.29.29.29
+    # - 223.5.5.5
+    # - 1.1.1.1
     - https://doh.pub/dns-query
     - https://dns.alidns.com/dns-query
 
   # 当 fallback 参数被配置时, DNS 请求将同时发送至上方 nameserver 列表和下方 fallback 列表中配置的所有 DNS 服务器.
   # 当解析得到的 IP 地址的地理位置不是 CN 时，clash 将会选用 fallback 中 DNS 服务器的解析结果。
-  # fallback:
-  #   - https://dns.google/dns-query
+  fallback:
+    - https://dns.google/dns-query
+    # - tls://1.1.1.1:853
+    # - tls://1.0.0.1:853
+    # - tls://dns.google:853
 
   # 如果使用 nameserver 列表中的服务器解析的 IP 地址在下方列表中的子网中，则它们被认为是无效的，
   # Clash 会选用 fallback 列表中配置 DNS 服务器解析得到的结果。
@@ -195,30 +201,14 @@ dns:
     #   - '+.facebook.com'
     #   - '+.youtube.com'
 
+tun:
+  enable: true
+  auto-route: true
+  auto-detect-interface: true
+  
 proxies:
-  - {name: PRO 俄罗斯02 | 3x, server: xxxxx, port: 3101, type: vmess, uuid: f174e7db-9712-31ec-8510-aaeaa304bc99, alterId: 0, cipher: auto, tls: true, skip-cert-verify: false, network: ws, ws-opts: {path: /, headers: {Host: ru02.iepl.nbsd.us}}, udp: true}
-  - {name: 香港 多台负载均衡 中继E| 1.5x, server: xxxxx, port: 61078, type: vmess, uuid: f174e7db-9712-31ec-8510-aaeaa304bc99, alterId: 0, cipher: auto, tls: true, skip-cert-verify: false, network: ws, ws-opts: {path: /, headers: {Host: hk-balancer.airport-v2.com}}, udp: true}
-  - 
-    name: 香港-HK1-流量倍率:0.5
-    type: trojan
-    server: xxxxx
-    port: 443
-    password: xxxxx
-    alpn:
-      - h2
-      - http/1.1
-    skip-cert-verify: true
-  - 
-    name: 荷兰-V6-4-流量倍率:0.1
-    type: trojan
-    server: xxxxx
-    port: 443
-    password: xxxxx
-    alpn:
-      - h2
-      - http/1.1
-    skip-cert-verify: true
-
+  - {name: PRO 俄罗斯02 | 3x}
+  
 proxy-groups:
   # 代理的转发链, 在 proxies 中不应该包含 relay. 不支持 UDP.
   # 流量: clash <-> http <-> vmess <-> ss1 <-> ss2 <-> 互联网
@@ -309,6 +299,36 @@ proxy-groups:
       - 香港 多台负载均衡 中继D | 1.5x
       - 香港 多台负载均衡 中继E| 1.5x
 
+  - name: Proxy2
+    type: select
+    proxies:
+      - 香港-HK1-流量倍率:0.5
+      - 澳大利亚-AU1-流量倍率:0.5
+      - 澳大利亚-AU2-流量倍率:1.0
+      - 澳大利亚-AU3-流量倍率:1.0
+      - 德国-DE1-流量倍率:1.0
+      - 德国-DE2-流量倍率:1.0
+      - 爱沙尼亚-EE1-流量倍率:0.1
+      - 美国-US1-流量倍率:1.5
+      - 美国-US3-流量倍率:1.0
+      - 日本-TY1-流量倍率:1.0
+      - 日本-TY2-流量倍率:1.0
+      - 日本-OS1-流量倍率:1.0
+      - 荷兰-NL1-流量倍率:0.5
+      - 荷兰-NL3-流量倍率:0.1
+      - 荷兰-NL5-流量倍率:0.1
+      - 英国-UK1-流量倍率:1.0
+      - 美国-V6-1-流量倍率:1.0
+      - 日本-V6-2-流量倍率:1.0
+      - 香港-V6-3-流量倍率:0.5
+      - 荷兰-V6-4-流量倍率:0.1
+
+  - name: Match
+    type: select
+    proxies:
+      - Proxy
+      - Proxy2
+  
   - name: Disney+页面加载
     type: url-test
     url: http://www.gstatic.com/generate_204
@@ -469,6 +489,7 @@ rules:
   ## 您可以在此处插入您补充的自定义规则（请注意保持缩进）
 
   # Nintendo Switch
+  - SRC-IP-CIDR,192.168.123.60/32,Switch
   - DOMAIN-SUFFIX,nintendo.net,Switch
   - DOMAIN-KEYWORD,nintendo,Switch
 
@@ -1000,4 +1021,4 @@ rules:
 
   # 最终规则
   - GEOIP,CN,DIRECT
-  - MATCH,Proxy
+  - MATCH,Match
