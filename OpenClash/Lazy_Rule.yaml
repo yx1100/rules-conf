@@ -196,8 +196,28 @@ dns:
     #   - '+.youtube.com'
 
 proxies:
-  - {name: PRO 俄罗斯02 | 3x, server: xxxxxxx, port: 3101, type: vmess, uuid: xxxxxxx, alterId: 0, cipher: auto, tls: true, skip-cert-verify: false, network: ws, ws-opts: {path: /, headers: {Host: ru02.iepl.nbsd.us}}, udp: true}
-  - {name: 香港 多台负载均衡 中继E| 1.5x, server: xxxxxxx, port: 61078, type: vmess, uuid: xxxxxxx, alterId: 0, cipher: auto, tls: true, skip-cert-verify: false, network: ws, ws-opts: {path: /, headers: {Host: hk-balancer.airport-v2.com}}, udp: true}
+  - {name: PRO 俄罗斯02 | 3x, server: xxxxx, port: 3101, type: vmess, uuid: f174e7db-9712-31ec-8510-aaeaa304bc99, alterId: 0, cipher: auto, tls: true, skip-cert-verify: false, network: ws, ws-opts: {path: /, headers: {Host: ru02.iepl.nbsd.us}}, udp: true}
+  - {name: 香港 多台负载均衡 中继E| 1.5x, server: xxxxx, port: 61078, type: vmess, uuid: f174e7db-9712-31ec-8510-aaeaa304bc99, alterId: 0, cipher: auto, tls: true, skip-cert-verify: false, network: ws, ws-opts: {path: /, headers: {Host: hk-balancer.airport-v2.com}}, udp: true}
+  - 
+    name: 香港-HK1-流量倍率:0.5
+    type: trojan
+    server: xxxxx
+    port: 443
+    password: xxxxx
+    alpn:
+      - h2
+      - http/1.1
+    skip-cert-verify: true
+  - 
+    name: 荷兰-V6-4-流量倍率:0.1
+    type: trojan
+    server: xxxxx
+    port: 443
+    password: xxxxx
+    alpn:
+      - h2
+      - http/1.1
+    skip-cert-verify: true
 
 proxy-groups:
   # 代理的转发链, 在 proxies 中不应该包含 relay. 不支持 UDP.
@@ -419,10 +439,38 @@ proxy-groups:
       - 香港 多台负载均衡 中继C | 1.5x
       - 香港 多台负载均衡 中继D | 1.5x
       - 香港 多台负载均衡 中继E| 1.5x
-
+  
+  - name: Switch
+    type: select
+    proxies:
+      - 香港-HK1-流量倍率:0.5
+      - 澳大利亚-AU1-流量倍率:0.5
+      - 澳大利亚-AU2-流量倍率:1.0
+      - 澳大利亚-AU3-流量倍率:1.0
+      - 德国-DE1-流量倍率:1.0
+      - 德国-DE2-流量倍率:1.0
+      - 爱沙尼亚-EE1-流量倍率:0.1
+      - 美国-US1-流量倍率:1.5
+      - 美国-US3-流量倍率:1.0
+      - 日本-TY1-流量倍率:1.0
+      - 日本-TY2-流量倍率:1.0
+      - 日本-OS1-流量倍率:1.0
+      - 荷兰-NL1-流量倍率:0.5
+      - 荷兰-NL3-流量倍率:0.1
+      - 荷兰-NL5-流量倍率:0.1
+      - 英国-UK1-流量倍率:1.0
+      - 美国-V6-1-流量倍率:1.0
+      - 日本-V6-2-流量倍率:1.0
+      - 香港-V6-3-流量倍率:0.5
+      - 荷兰-V6-4-流量倍率:0.1
+  
 rules:
   # 自定义规则
   ## 您可以在此处插入您补充的自定义规则（请注意保持缩进）
+
+  # Nintendo Switch
+  - DOMAIN-SUFFIX,nintendo.net,Switch
+  - DOMAIN-KEYWORD,nintendo,Switch
 
   # Disney+
   - DOMAIN-SUFFIX,disneyplus.com,Disney+页面加载
