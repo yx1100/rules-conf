@@ -1,0 +1,5 @@
+payload:
+  # > Disney Plus
+  # - USER-AGENT,Disney*
+
+  - DOMAIN-SUFFIX,dssott.com
